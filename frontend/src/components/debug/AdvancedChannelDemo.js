@@ -14,8 +14,8 @@ import {
   MoreVertical,
   TrendingUp
 } from 'lucide-react';
-import { useAdvancedMockChannels } from '../hooks/useAdvancedMockChannels';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { useAdvancedMockChannels } from '../../hooks/useAdvancedMockChannels';
+import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const AdvancedChannelDemo = () => {

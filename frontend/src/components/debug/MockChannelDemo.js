@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Hash, Volume2, Music, Users, Bot, Trash2, RotateCcw } from 'lucide-react';
-import { useMockChannels } from '../hooks/useMockChannels';
+import { useMockChannels } from '../../hooks/useMockChannels';
 
 const MockChannelDemo = () => {
   const {
