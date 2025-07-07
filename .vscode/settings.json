@@ -1,0 +1,104 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": "test-src-file"
+  },
+  "jest.showCoverageOnLoad": true,
+  "jest.autoRevealOutput": "on-run",
+  "testing.automaticallyOpenPeekView": "never",
+  "testing.followRunningTest": false,
+  "testing.openTesting": "neverOpen",
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "workbench.colorCustomizations": {
+    "terminal.background": "#1e1e1e",
+    "terminal.foreground": "#d4d4d4"
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "tasks.runInTerminal": true,
+  "editor.rulers": [80, 120],
+  "files.associations": {
+    "*.js": "javascript",
+    "*.jsx": "javascriptreact",
+    "*.ts": "typescript",
+    "*.tsx": "typescriptreact"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.git": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.js": "${capture}.test.js, ${capture}.spec.js",
+    "*.jsx": "${capture}.test.jsx, ${capture}.spec.jsx",
+    "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
+    "*.tsx": "${capture}.test.tsx, ${capture}.spec.tsx"
+  },
+  
+  // GitHub Copilot Settings for Auto-Approval
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true
+  },
+  "github.copilot.advanced": {
+    "length": 500,
+    "temperature": 0.1,
+    "top_p": 1,
+    "listCount": 10,
+    "indentationMode": {
+      "python": "tabSize",
+      "javascript": "tabSize",
+      "typescript": "tabSize"
+    }
+  },
+  
+  // Terminal and Task Auto-Approval Settings
+  "terminal.integrated.confirmOnExit": "never",
+  "terminal.integrated.confirmOnKill": "never",
+  "task.autoDetect": "on",
+  "task.quickOpen.history": 10,
+  "task.quickOpen.detail": true,
+  "task.quickOpen.skip": false,
+  "task.saveBeforeRun": "always",
+  "task.slowProviderWarning": false,
+  
+  // Auto-run test commands without confirmation
+  "terminal.integrated.allowChords": false,
+  "terminal.integrated.commandsToSkipShell": [
+    "npm test",
+    "npm run test:all",
+    "npm run test:frontend",
+    "npm run test:backend",
+    "npm run test:coverage"
+  ],
+  
+  // Security settings for trusted commands
+  "security.workspace.trust.untrustedFiles": "open",
+  "security.workspace.trust.banner": "never",
+  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.emptyWindow": false,
+  
+  // Auto-accept common safe commands
+  "terminal.integrated.shellIntegration.suggestEnabled": true,
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "terminal.integrated.enablePersistentSessions": true,
+  
+  // Copilot Chat Settings
+  "github.copilot.chat.followups": "always",
+  "github.copilot.chat.localeOverride": "en",
+  "github.copilot.chat.useProjectTemplates": true
+}

@@ -9,7 +9,8 @@ class Message {
     this.createdAt = data.createdAt || new Date();
     this.editedAt = data.editedAt;
     this.attachments = data.attachments || [];
-    this.reactions = data.reactions || {};
+    this.type = data.type || 'user';
+    this.botAction = data.botAction;
   }
 
   static async create(messageData) {
@@ -20,7 +21,8 @@ class Message {
       channelId: messageData.channelId,
       createdAt: new Date(),
       attachments: messageData.attachments || [],
-      reactions: {}
+      type: messageData.type || 'user',
+      botAction: messageData.botAction
     });
 
     return new Message({ id: docRef.id, ...messageData });

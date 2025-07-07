@@ -9,7 +9,9 @@
     "build": "echo 'Build step placeholder'",
     "deploy": "gcloud run deploy discord-clone-api --source .",
     "test": "node test-api.js",
-    "test:local": "API_URL=http://localhost:8080 node test-api.js"
+    "test:local": "API_URL=http://localhost:8080 node test-api.js",
+    "health": "node health-check.js",
+    "test:integration": "node test-api.js"
   },
   "keywords": [
     "discord",

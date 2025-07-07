@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getCurrentUserToken } from './firebase';
 
 // API base URL - adjust based on your backend deployment
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:9000';
 
 // Create axios instance
 const api = axios.create({
@@ -58,6 +58,7 @@ export const apiEndpoints = {
   // Channels
   channels: {
     getAll: (serverId) => api.get('/api/channels', { params: { serverId } }),
+    getDemo: () => api.get('/api/channels/demo'), // Demo channels without auth
     getById: (channelId) => api.get(`/api/channels/${channelId}`),
     create: (data) => api.post('/api/channels', data),
     update: (channelId, data) => api.patch(`/api/channels/${channelId}`, data),

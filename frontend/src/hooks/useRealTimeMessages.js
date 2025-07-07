@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { collection, query, where, orderBy, limit, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { apiEndpoints } from '../config/api';
 import toast from 'react-hot-toast';
@@ -11,9 +11,9 @@ export const useRealTimeMessages = (channelId) => {
   const unsubscribeRef = useRef(null);
 
   // Load initial messages from API (for pagination support)
-  const loadInitialMessages = async () => {
+  const loadInitialMessages = useCallback(async () => {
     if (!channelId) return;
-    
+
     try {
       setLoading(true);
       const response = await apiEndpoints.messages.getByChannel(channelId, { limit: 50 });
@@ -25,10 +25,10 @@ export const useRealTimeMessages = (channelId) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [channelId]);
 
   // Set up real-time listener
-  const setupRealTimeListener = () => {
+  const setupRealTimeListener = useCallback(() => {
     if (!channelId) return;
 
     const messagesRef = collection(db, 'messages');
@@ -89,7 +89,7 @@ export const useRealTimeMessages = (channelId) => {
     );
 
     unsubscribeRef.current = unsubscribe;
-  };
+  }, [channelId]);
 
   // Send message
   const sendMessage = async (content, attachments = []) => {
@@ -171,7 +171,7 @@ export const useRealTimeMessages = (channelId) => {
         unsubscribeRef.current = null;
       }
     };
-  }, [channelId]);
+  }, [channelId, loadInitialMessages, setupRealTimeListener]);
 
   return {
     messages,

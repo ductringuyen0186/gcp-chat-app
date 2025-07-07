@@ -1,12 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { Send, Plus, Smile } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Plus, Smile, Music, Pause, Play, SkipForward, Volume2 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 
-const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message..." }) => {
+const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message...", channel }) => {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showMusicControls, setShowMusicControls] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(50);
   const textareaRef = useRef(null);
+
+  // Show music controls for music channels
+  useEffect(() => {
+    setShowMusicControls(channel?.type === 'music' && channel?.botEnabled);
+  }, [channel]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,6 +23,24 @@ const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message.
 
     setSending(true);
     try {
+      // Handle music bot commands
+      if (channel?.type === 'music' && message.startsWith('!')) {
+        const command = message.slice(1).split(' ')[0];
+        switch (command) {
+          case 'play':
+            setIsPlaying(true);
+            break;
+          case 'pause':
+            setIsPlaying(false);
+            break;
+          case 'skip':
+            // Handle skip command
+            break;
+          default:
+            break;
+        }
+      }
+
       await onSendMessage(message.trim());
       setMessage('');
       textareaRef.current?.focus();
@@ -41,7 +67,6 @@ const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message.
     const newMessage = message.slice(0, start) + emoji + message.slice(end);
     setMessage(newMessage);
     
-    // Set cursor position after emoji
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
       textarea.focus();
@@ -62,8 +87,47 @@ const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message.
     adjustTextareaHeight();
   }, [message]);
 
+  const handleVolumeChange = (e) => {
+    setVolume(parseInt(e.target.value));
+  };
+
   return (
     <div className="p-4 bg-discord-background border-t border-gray-600">
+      {/* Music Controls */}
+      {showMusicControls && (
+        <div className="mb-4 p-3 bg-discord-channel rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="p-2 text-discord-light hover:text-white hover:bg-discord-background rounded transition-colors"
+              >
+                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              </button>
+              <button
+                className="p-2 text-discord-light hover:text-white hover:bg-discord-background rounded transition-colors"
+              >
+                <SkipForward className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2 flex-1 max-w-xs ml-4">
+              <Volume2 className="w-4 h-4 text-discord-light" />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={handleVolumeChange}
+                className="w-full h-2 rounded-lg appearance-none bg-discord-background cursor-pointer"
+              />
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-discord-light">
+            Type !play [YouTube URL] to play music • !pause to pause • !skip to skip
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex items-end space-x-3 bg-discord-channel rounded-lg p-3">
           {/* Attachment button */}
@@ -82,7 +146,7 @@ const MessageInput = ({ onSendMessage, disabled = false, placeholder = "Message.
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={placeholder}
+              placeholder={channel?.type === 'music' ? "Type !play [YouTube URL] or message..." : placeholder}
               disabled={disabled || sending}
               className="w-full bg-transparent text-white placeholder-discord-light resize-none focus:outline-none max-h-32 min-h-[24px]"
               rows="1"

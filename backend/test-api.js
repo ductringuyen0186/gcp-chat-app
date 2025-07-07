@@ -8,7 +8,7 @@
 const http = require('http');
 const https = require('https');
 
-const BASE_URL = process.env.API_URL || 'http://localhost:8080';
+const BASE_URL = process.env.API_URL || 'http://localhost:9000';
 const isHttps = BASE_URL.startsWith('https');
 const httpModule = isHttps ? https : http;
 
@@ -34,8 +34,10 @@ function makeRequest(path, method = 'GET', data = null, headers = {}) {
       port: url.port || (isHttps ? 443 : 80),
       path: url.pathname + url.search,
       method,
+      timeout: 10000, // 10 second timeout
       headers: {
         'Content-Type': 'application/json',
+        'User-Agent': 'Discord-Clone-Test/1.0',
         ...headers
       }
     };
@@ -71,7 +73,19 @@ function makeRequest(path, method = 'GET', data = null, headers = {}) {
     });
 
     req.on('error', (err) => {
+      log('red', `Request failed: ${err.code} - ${err.message}`);
+      if (err.code === 'ECONNRESET') {
+        log('yellow', '💡 Connection reset suggests backend crashed or rejected the request');
+      } else if (err.code === 'ECONNREFUSED') {
+        log('yellow', '💡 Connection refused suggests backend is not running');
+      }
       reject(err);
+    });
+
+    req.on('timeout', () => {
+      log('red', 'Request timeout - backend may be unresponsive');
+      req.destroy();
+      reject(new Error('Request timeout'));
     });
 
     if (data) {
@@ -101,6 +115,32 @@ async function testEndpoint(name, path, expectedStatus = 200, method = 'GET', da
   } catch (error) {
     log('red', `❌ ${name} - Error: ${error.message}`);
     return false;
+  }
+}
+
+async function testHealth() {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      makeRequest('/health', 'GET').then(resolve).catch(reject);
+    });
+    log('green', `✅ Health check passed: ${JSON.stringify(res)}`);
+  } catch (err) {
+    log('red', `❌ Health check failed: ${err.message}`);
+  }
+}
+
+async function testChannels() {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      makeRequest('/api/channels', 'GET', null, { Authorization: 'Bearer test' }).then(resolve).catch(reject);
+    });
+    if (Array.isArray(res.channels)) {
+      log('green', `✅ Channels endpoint works: ${res.channels.length} channels`);
+    } else {
+      log('red', `❌ Channels endpoint returned unexpected data: ${JSON.stringify(res)}`);
+    }
+  } catch (err) {
+    log('red', `❌ Channels endpoint error: ${err.message}`);
   }
 }
 
@@ -147,5 +187,74 @@ async function runTests() {
   console.log('   3. Test with real Firebase ID tokens');
 }
 
-// Run the tests
-runTests().catch(console.error);
+// Main test execution
+async function main() {
+  log('blue', '🔍 Starting comprehensive backend integration tests...\n');
+  
+  // Step 1: Test basic connectivity
+  log('yellow', 'Step 1: Testing basic connectivity...');
+  await testConnectivity();
+  console.log('');
+  
+  // Step 2: Run main test suite
+  log('yellow', 'Step 2: Running endpoint tests...');
+  await runTests();
+  console.log('');
+  
+  // Step 3: Test specific functions
+  log('yellow', 'Step 3: Testing specific health and channels...');
+  await testHealth();
+  await testChannels();
+}
+
+// Test basic connectivity before running other tests
+async function testConnectivity() {
+  try {
+    log('blue', 'Testing raw TCP connectivity to localhost:9000...');
+    
+    const net = require('net');
+    const socket = new net.Socket();
+    
+    const connectPromise = new Promise((resolve, reject) => {
+      socket.setTimeout(5000);
+      
+      socket.on('connect', () => {
+        log('green', '✅ TCP connection successful');
+        socket.destroy();
+        resolve(true);
+      });
+      
+      socket.on('timeout', () => {
+        log('red', '❌ Connection timeout - backend may not be running');
+        socket.destroy();
+        reject(new Error('Connection timeout'));
+      });
+      
+      socket.on('error', (err) => {
+        log('red', `❌ Connection error: ${err.message}`);
+        socket.destroy();
+        reject(err);
+      });
+      
+      socket.connect(9000, 'localhost');
+    });
+    
+    await connectPromise;
+    
+  } catch (error) {
+    log('red', `❌ Basic connectivity test failed: ${error.message}`);
+    log('yellow', '💡 Suggestions:');
+    console.log('   - Make sure backend is running: npm run dev');
+    console.log('   - Check if port 9000 is available');
+    console.log('   - Verify no firewall is blocking connections');
+    return false;
+  }
+  
+  return true;
+}
+
+// Run the main test
+main().catch((error) => {
+  console.error('Test execution failed:', error);
+  process.exit(1);
+});

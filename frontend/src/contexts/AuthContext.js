@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Fetch user profile from backend
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = React.useCallback(async () => {
     try {
       const response = await apiEndpoints.auth.getProfile();
       setUserProfile(response.data);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
     }
-  };
+  }, [currentUser]);
 
   // Update user status
   const updateUserStatus = async (status) => {
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [fetchUserProfile]);
 
   // Update status to online when user becomes active
   useEffect(() => {

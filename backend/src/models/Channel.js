@@ -9,6 +9,8 @@ class Channel {
     this.description = data.description || '';
     this.position = data.position || 0;
     this.createdAt = data.createdAt || new Date();
+    this.botEnabled = data.botEnabled || false;
+    this.botType = data.botType || null;
   }
 
   static async create(channelData) {
@@ -19,10 +21,13 @@ class Channel {
       serverId: channelData.serverId || 'default',
       description: channelData.description || '',
       position: channelData.position || 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      botEnabled: channelData.botEnabled || false,
+      botType: channelData.botType || null
     });
-
-    return new Channel({ id: docRef.id, ...channelData });
+    // Fetch the full document to get all fields (including createdAt as stored)
+    const doc = await docRef.get();
+    return new Channel({ id: doc.id, ...doc.data() });
   }
 
   static async findAll(serverId = null, limit = 50) {

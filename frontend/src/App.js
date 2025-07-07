@@ -6,7 +6,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import ChatPage from './pages/ChatPage';
 import TestPage from './pages/TestPage';
-import DebugAuthPage from './pages/DebugAuthPage';
+import MockChannelDemo from './components/debug/MockChannelDemo';
+import AdvancedChannelDemo from './components/debug/AdvancedChannelDemo';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Create a client for React Query
@@ -56,20 +57,21 @@ const AppRoutes = () => {
         />
         <Route
           path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          }
+          element={<ChatPage />}
         />
         <Route
           path="/test"
           element={<TestPage />}
         />
         <Route
-          path="/debug-auth"
-          element={<DebugAuthPage />}
+          path="/mock-demo"
+          element={<MockChannelDemo />}
         />
+        <Route
+          path="/advanced-demo"
+          element={<AdvancedChannelDemo />}
+        />
+
         <Route path="/" element={<Navigate to="/chat" replace />} />
         <Route path="*" element={<Navigate to="/chat" replace />} />
       </Routes>

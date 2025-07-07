@@ -118,6 +118,10 @@ const ChatPage = () => {
     }
 
     try {
+      if (isDemo) {
+        toast.info('This is demo mode. Sign in to send real messages!');
+        return;
+      }
       await sendMessage(content);
     } catch (error) {
       // Error handled in hook
@@ -128,6 +132,10 @@ const ChatPage = () => {
   // Handle message editing
   const handleEditMessage = async (messageId, newContent) => {
     try {
+      if (isDemo) {
+        toast.info('This is demo mode. Sign in to edit messages!');
+        return;
+      }
       await editMessage(messageId, newContent);
     } catch (error) {
       // Error handled in hook
@@ -137,37 +145,32 @@ const ChatPage = () => {
 
   // Handle message deletion
   const handleDeleteMessage = async (messageId) => {
+    if (isDemo) {
+      toast.info('This is demo mode. Sign in to delete messages!');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this message?')) {
       try {
         await deleteMessage(messageId);
       } catch (error) {
         // Error handled in hook
+        throw error;
       }
     }
   };
 
-  // Load channels on component mount
+  // Load channels on mount
   useEffect(() => {
     loadChannels();
-  }, [loadChannels]);
-
-  // Create default channel if none exist
-  useEffect(() => {
-    if (!loadingChannels && channels.length === 0) {
-      createChannel({
-        name: 'general',
-        type: 'text',
-        description: 'General discussion'
-      }).catch(console.error);
-    }
-  }, [loadingChannels, channels.length, createChannel]);
+  }, []);
 
   if (loadingChannels) {
     return (
       <div className="h-screen bg-discord-background flex items-center justify-center">
         <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-discord-light">Loading Discord Clone...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-discord-primary"></div>
+          <p className="text-discord-light mt-4">Loading Discord Clone...</p>
         </div>
       </div>
     );
@@ -199,61 +202,57 @@ const ChatPage = () => {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
-        {currentChannel ? (
-          <>
-            {/* Channel Header */}
-            <div className="h-16 bg-discord-background border-b border-gray-600 flex items-center px-4">
-              <div className="flex items-center space-x-3">
-                <Hash className="w-6 h-6 text-discord-light" />
-                <div>
-                  <h1 className="text-white font-semibold">{currentChannel.name}</h1>
-                  {currentChannel.description && (
-                    <p className="text-discord-light text-sm">{currentChannel.description}</p>
+          {currentChannel ? (
+            <>
+              {/* Channel Header */}
+              <div className="h-16 bg-discord-dark border-b border-gray-600 flex items-center px-4">
+                <div className="flex items-center space-x-3">
+                  <Hash className="w-6 h-6 text-discord-light" />
+                  <div>
+                    <h1 className="text-white font-semibold">{currentChannel.name}</h1>
+                    {currentChannel.description && (
+                      <p className="text-discord-light text-sm">{currentChannel.description}</p>
+                    )}
+                  </div>
+                  {currentChannel.type === 'music' && (
+                    <span className="ml-2 bg-discord-primary text-white text-xs px-2 py-1 rounded">
+                      Music Bot
+                    </span>
                   )}
                 </div>
               </div>
 
-              <div className="ml-auto flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-discord-light">
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm">1 online</span>
-                </div>
+              {/* Messages Area */}
+              <div className="flex-1 flex flex-col min-h-0">
+                <MessageList
+                  messages={messages}
+                  loading={messagesLoading}
+                  onEditMessage={handleEditMessage}
+                  onDeleteMessage={handleDeleteMessage}
+                  onLoadMore={loadMoreMessages}
+                />
+                <MessageInput
+                  onSendMessage={handleSendMessage}
+                  channelType={currentChannel.type}
+                  disabled={isDemo}
+                  placeholder={isDemo ? 'Sign in to send messages...' : `Message #${currentChannel.name}`}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <Users className="w-16 h-16 text-discord-light mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome to Discord Clone</h2>
+                <p className="text-discord-light">
+                  {channels.length === 0 
+                    ? 'No channels available. Create your first channel!' 
+                    : 'Select a channel to start chatting'
+                  }
+                </p>
               </div>
             </div>
-
-            {/* Messages Area */}
-            <MessageList
-              messages={messages.map(msg => ({
-                ...msg,
-                authorName: msg.authorId === userProfile?.uid 
-                  ? userProfile?.displayName 
-                  : 'Unknown User'
-              }))}
-              loading={messagesLoading}
-              onEditMessage={handleEditMessage}
-              onDeleteMessage={handleDeleteMessage}
-              onLoadMore={loadMoreMessages}
-            />
-
-            {/* Message Input */}
-            <MessageInput
-              onSendMessage={handleSendMessage}
-              placeholder={`Message #${currentChannel.name}`}
-            />
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <Hash className="w-16 h-16 text-discord-light mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
-                No Channel Selected
-              </h2>
-              <p className="text-discord-light">
-                Select a channel from the sidebar to start chatting
-              </p>
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
     </div>
