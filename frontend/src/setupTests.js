@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom';
 
+// Polyfill for TextEncoder/TextDecoder (needed for Firebase)
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Mock window.confirm for tests
 global.confirm = jest.fn(() => true);
 
@@ -44,3 +49,22 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock Firebase
+jest.mock('./config/firebase', () => ({
+  db: {
+    collection: jest.fn(() => ({
+      onSnapshot: jest.fn(),
+      add: jest.fn(),
+      doc: jest.fn(() => ({
+        set: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      })),
+    })),
+  },
+  auth: {
+    currentUser: null,
+    onAuthStateChanged: jest.fn(),
+  },
+}));

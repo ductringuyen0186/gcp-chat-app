@@ -49,8 +49,10 @@ class MockChannelManager {
 
     this.loadingState = true;
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+    // Simulate network delay (but not in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+    }
 
     if (reset) {
       this.loadedChannels = [];
@@ -122,8 +124,10 @@ class MockChannelManager {
   async createChannel(channelData) {
     this.loadingState = true;
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 700));
+    // Simulate network delay (but not in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 700));
+    }
 
     const newChannel = {
       id: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -173,7 +177,10 @@ class MockChannelManager {
     this.loadingState = true;
     
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 500));
+    // Simulate network delay (but not in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 500));
+    }
 
     const channelIndex = this.channels.findIndex(c => c.id === channelId);
     const loadedIndex = this.loadedChannels.findIndex(c => c.id === channelId);
@@ -207,7 +214,10 @@ class MockChannelManager {
     this.loadingState = true;
     
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
+    // Simulate network delay (but not in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
+    }
 
     this.channels = this.channels.filter(c => c.id !== channelId);
     this.loadedChannels = this.loadedChannels.filter(c => c.id !== channelId);

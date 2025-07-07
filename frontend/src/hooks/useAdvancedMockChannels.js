@@ -76,14 +76,16 @@ export const useAdvancedMockChannels = (options = {}) => {
         ...loadOptions
       });
 
-      if (loadOptions.reset) {
-        setChannels(result.channels);
-      } else {
-        setChannels(result.loadedChannels);
-      }
+      if (result) {
+        if (loadOptions.reset) {
+          setChannels(result.channels || []);
+        } else {
+          setChannels(result.loadedChannels || []);
+        }
 
-      setPagination(result.pagination);
-      setStats(mockChannelManager.getStats());
+        setPagination(result.pagination || {});
+        setStats(mockChannelManager.getStats());
+      }
 
       return result;
     } catch (err) {
@@ -101,10 +103,13 @@ export const useAdvancedMockChannels = (options = {}) => {
 
     try {
       const result = await mockChannelManager.loadMore();
-      setChannels(result.loadedChannels);
-      setPagination(result.pagination);
-      setStats(mockChannelManager.getStats());
-      return result;
+      if (result && result.loadedChannels) {
+        setChannels(result.loadedChannels);
+        setPagination(result.pagination);
+        setStats(mockChannelManager.getStats());
+        return result;
+      }
+      return null;
     } catch (err) {
       console.error('Failed to load more channels:', err);
       setError(err.message);
@@ -141,8 +146,10 @@ export const useAdvancedMockChannels = (options = {}) => {
       const result = await mockChannelManager.createChannel(channelData);
       
       // Update local state
-      setChannels(prev => [result.channel, ...prev]);
-      setStats(mockChannelManager.getStats());
+      if (result && result.channel) {
+        setChannels(prev => [result.channel, ...prev]);
+        setStats(mockChannelManager.getStats());
+      }
 
       return result;
     } catch (err) {
@@ -163,8 +170,10 @@ export const useAdvancedMockChannels = (options = {}) => {
       const result = await mockChannelManager.createFromTemplate(templateName, customData);
       
       // Update local state
-      setChannels(prev => [result.channel, ...prev]);
-      setStats(mockChannelManager.getStats());
+      if (result && result.channel) {
+        setChannels(prev => [result.channel, ...prev]);
+        setStats(mockChannelManager.getStats());
+      }
 
       return result;
     } catch (err) {

@@ -1,9 +1,44 @@
-import axios from 'axios';
 import { apiEndpoints } from './api';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios;
+// Mock Firebase first
+jest.mock('./firebase', () => ({
+  db: {},
+  auth: {
+    currentUser: null,
+  },
+}));
+
+// Mock axios completely
+jest.mock('axios', () => {
+  const mockAxiosInstance = {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
+    interceptors: {
+      request: {
+        use: jest.fn(),
+      },
+      response: {
+        use: jest.fn(),
+      },
+    },
+  };
+  
+  return {
+    create: jest.fn(() => mockAxiosInstance),
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+    __mockInstance: mockAxiosInstance,
+  };
+});
+
+// Import the mock instance
+const axios = require('axios');
+const mockedAxios = axios.__mockInstance;
 
 describe('API Endpoints - Channels', () => {
   beforeEach(() => {
@@ -23,7 +58,7 @@ describe('API Endpoints - Channels', () => {
 
       const result = await apiEndpoints.channels.getAll();
 
-      expect(mockedAxios.get).toHaveBeenCalledWith('/api/channels');
+      expect(mockedAxios.get).toHaveBeenCalledWith('/api/channels', { params: { serverId: undefined } });
       expect(result.data.channels).toEqual(mockChannels);
     });
 
@@ -93,13 +128,13 @@ describe('API Endpoints - Channels', () => {
         { id: '2', content: 'World', channelId: 'channel-1' },
       ];
 
-      mockedAxios.get.mockResolvedValueOnce({
+      mockedAxios.get.mockReturnValueOnce({
         data: { messages: mockMessages },
       });
 
-      const result = await apiEndpoints.messages.getByChannel('channel-1');
+      const result = apiEndpoints.messages.getByChannel('channel-1');
 
-      expect(mockedAxios.get).toHaveBeenCalledWith('/api/messages/channel/channel-1');
+      expect(mockedAxios.get).toHaveBeenCalledWith('/api/messages/channel/channel-1', { params: {} });
       expect(result.data.messages).toEqual(mockMessages);
     });
 
@@ -138,13 +173,13 @@ describe('API Endpoints - Channels', () => {
         updatedAt: '2023-01-01T00:00:00Z',
       };
 
-      mockedAxios.put.mockResolvedValueOnce({
+      mockedAxios.patch.mockReturnValueOnce({
         data: { message: mockUpdatedMessage },
       });
 
-      const result = await apiEndpoints.messages.update('1', updateData);
+      const result = apiEndpoints.messages.update('1', updateData);
 
-      expect(mockedAxios.put).toHaveBeenCalledWith('/api/messages/1', updateData);
+      expect(mockedAxios.patch).toHaveBeenCalledWith('/api/messages/1', updateData);
       expect(result.data.message).toEqual(mockUpdatedMessage);
     });
 

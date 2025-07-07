@@ -163,6 +163,11 @@ export const useRealTimeMessages = (channelId) => {
       setError(null);
       loadInitialMessages();
       setupRealTimeListener();
+    } else {
+      // If no channelId, set loading to false immediately
+      setLoading(false);
+      setMessages([]);
+      setError(null);
     }
 
     return () => {

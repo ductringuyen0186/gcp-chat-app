@@ -3,27 +3,45 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { useRealTimeMessages } from './useRealTimeMessages';
 import { apiEndpoints } from '../config/api';
 
+// Mock Firebase functions - declare functions before using them
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  orderBy: jest.fn(),
+  limit: jest.fn(),
+  onSnapshot: jest.fn(),
+}));
+
+// Mock the Firebase config
+jest.mock('../config/firebase', () => ({
+  db: {},
+}));
+
 // Mock the API
 jest.mock('../config/api', () => ({
   apiEndpoints: {
     messages: {
       getByChannel: jest.fn(),
       create: jest.fn(),
+      send: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
   },
 }));
 
-// Mock Firebase real-time listener
-jest.mock('../config/firebase', () => ({
-  onSnapshot: jest.fn(),
-  collection: jest.fn(),
-  query: jest.fn(),
-  orderBy: jest.fn(),
-  limit: jest.fn(),
-  where: jest.fn(),
+// Mock toast
+jest.mock('react-hot-toast', () => ({
+  __esModule: true,
+  default: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
 }));
+
+// Import the mocked functions
+const { collection, query, where, orderBy, limit, onSnapshot } = require('firebase/firestore');
 
 describe('useRealTimeMessages Hook', () => {
   let queryClient;
@@ -36,6 +54,23 @@ describe('useRealTimeMessages Hook', () => {
       },
     });
     jest.clearAllMocks();
+    
+    // Setup default Firebase mocks
+    collection.mockReturnValue({});
+    query.mockReturnValue({});
+    where.mockReturnValue({});
+    orderBy.mockReturnValue({});
+    limit.mockReturnValue({});
+    onSnapshot.mockImplementation((query, callback) => {
+      // Return an unsubscribe function
+      return () => {};
+    });
+    
+    // Setup API mocks
+    apiEndpoints.messages.getByChannel.mockResolvedValue({ data: { messages: [] } });
+    apiEndpoints.messages.send.mockResolvedValue({ data: { message: { id: 'test-id', content: 'test' } } });
+    apiEndpoints.messages.update.mockResolvedValue({ data: { message: { id: 'test-id', content: 'updated' } } });
+    apiEndpoints.messages.delete.mockResolvedValue({ data: { success: true } });
   });
 
   const wrapper = ({ children }) => (
@@ -79,9 +114,9 @@ describe('useRealTimeMessages Hook', () => {
 
     await result.current.sendMessage('Test message');
 
-    expect(apiEndpoints.messages.create).toHaveBeenCalledWith({
+    expect(apiEndpoints.messages.send).toHaveBeenCalledWith('channel-1', {
       content: 'Test message',
-      channelId: 'channel-1',
+      attachments: [],
     });
   });
 
